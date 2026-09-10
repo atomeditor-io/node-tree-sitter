@@ -29,7 +29,10 @@ static inline void setup_transfer_buffer(uint32_t node_count) {
     }
     transfer_buffer_length = new_length;
     transfer_buffer = static_cast<uint32_t *>(malloc(transfer_buffer_length * sizeof(uint32_t)));
-    auto js_transfer_buffer = ArrayBuffer::New(Isolate::GetCurrent(), transfer_buffer, transfer_buffer_length * sizeof(uint32_t));
+    size_t transfer_byte_length = transfer_buffer_length * sizeof(uint32_t);
+    auto transfer_backing = v8::ArrayBuffer::NewBackingStore(Isolate::GetCurrent(), transfer_byte_length);
+    memcpy(transfer_backing->Data(), transfer_buffer, transfer_byte_length);
+    auto js_transfer_buffer = v8::ArrayBuffer::New(Isolate::GetCurrent(), std::shared_ptr<v8::BackingStore>(transfer_backing.release()));
     Nan::Set(
       Nan::New(module_exports),
       Nan::New("nodeTransferArray").ToLocalChecked(),
