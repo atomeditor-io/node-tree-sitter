@@ -221,11 +221,17 @@ static void CacheNodeForTree(Tree *tree, Isolate *isolate, Local<Object> js_node
   };
   const void *key = UnmarshalNodeId(key_parts);
 
+  // Multiple JS wrappers can legitimately reference the same native node
+  // (e.g. a re-parse allocating a node at a reused address before the old
+  // wrapper's weak-callback finalization has run - timing varies by V8
+  // version). Keep the first cached wrapper instead of aborting.
+  if (tree->cached_nodes_.count(key)) {
+    return;
+  }
+
   auto cache_entry = new Tree::NodeCacheEntry{tree, key, {}};
   cache_entry->node.Reset(isolate, js_node);
   cache_entry->node.SetWeak(cache_entry, &FinalizeNode, Nan::WeakCallbackType::kParameter);
-
-  assert(!tree->cached_nodes_.count(key));
 
   tree->cached_nodes_[key] = cache_entry;
 }
