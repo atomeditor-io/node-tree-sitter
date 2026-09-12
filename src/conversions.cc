@@ -30,7 +30,7 @@ void InitConversions(Local<Object> exports) {
   point_transfer_buffer = static_cast<uint32_t *>(malloc(2 * sizeof(uint32_t)));
   size_t js_point_transfer_byte_length = 2 * sizeof(uint32_t);
   auto js_point_transfer_buffer = v8::ArrayBuffer::New(Isolate::GetCurrent(), js_point_transfer_byte_length);
-  memcpy(js_point_transfer_buffer->GetBackingStore()->Data(), point_transfer_buffer, js_point_transfer_byte_length);
+  memcpy(js_point_transfer_buffer->Data(), point_transfer_buffer, js_point_transfer_byte_length);
   Nan::Set(exports, Nan::New("pointTransferArray").ToLocalChecked(), Uint32Array::New(js_point_transfer_buffer, 0, 2));
 }
 

@@ -91,6 +91,7 @@ void Query::New(const Nan::FunctionCallbackInfo<Value> &info) {
 
   const TSLanguage *language = language_methods::UnwrapLanguage(info[0]);
   const char *source;
+  std::string source_str;
   uint32_t source_len;
   uint32_t error_offset = 0;
   TSQueryError error_type = TSQueryErrorNone;
@@ -102,8 +103,14 @@ void Query::New(const Nan::FunctionCallbackInfo<Value> &info) {
 
   if (info[1]->IsString()) {
     auto string = Nan::To<String> (info[1]).ToLocalChecked();
-    source = *Nan::Utf8String(string);
-    source_len = string->Length();
+    // NOTE: must copy into std::string - `source = *Nan::Utf8String(string)`
+    // dangles (temporary dies at ;) causing use-after-free crashes, and
+    // `string->Length()` counts UTF-16 units, not the UTF-8 bytes that
+    // ts_query_new expects.
+    Nan::Utf8String utf8_string(string);
+    source_str.assign(*utf8_string, utf8_string.length());
+    source = source_str.c_str();
+    source_len = source_str.size();
   }
   else if (node::Buffer::HasInstance(info[1])) {
     source = node::Buffer::Data(info[1]);
