@@ -27,7 +27,7 @@ static inline void setup_transfer_buffer(uint32_t node_count) {
     transfer_buffer_length = new_length;
     size_t transfer_byte_length = transfer_buffer_length * sizeof(uint32_t);
     auto js_transfer_buffer = v8::ArrayBuffer::New(Isolate::GetCurrent(), transfer_byte_length);
-    transfer_buffer = static_cast<uint32_t *>(js_transfer_buffer->GetBackingStore()->Data());
+    transfer_buffer = static_cast<uint32_t *>(js_transfer_buffer->Data());
     Nan::Set(
       Nan::New(module_exports),
       Nan::New("nodeTransferArray").ToLocalChecked(),
